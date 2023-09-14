@@ -1,0 +1,46 @@
+# Развернуть Postgres в Docker-контейнере
+
+// Создаем каталог для хранения данных, которые будут появятся в процессе работы экземпляра PostgreSQL
+mkdir -p $HOME/docker/volumes/postgres
+
+
+// Команда для старта контейнера
+sudo docker run 
+--rm 
+--name some-postgres 
+-e POSTGRES_PASSWORD=password
+-e POSTGRES_USER=root
+-e POSTGRES_DB=otus
+-d 
+-p 5432:5432 
+-v $HOME/docker/volumes/postgres:/var/lib/postgresql/data postgres
+
+// Команда для старта контейнера целиком
+sudo docker run --rm --name some-postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=root -e POSTGRES_DB=otus -d -p 5432:5432 -v $HOME/docker/volumes/postgres:/var/lib/postgresql/data postgres
+
+
+// Подключение к контейнеру  
+Установка утилиты psql ее из пакета postgresql-client для подключения к контейнеру:
+sudo apt install postgresql-client
+
+// Команда подключения
+psql -h 127.0.0.1 -U root -d otus
+psql -h 192.168.0.4 -U root -d otus
+
+// Можно подключиться непосредственно к контейнеру:
+sudo docker exec -it some-posgres psql -U root
+
+// Подключение к контейнеру
+docker exec -it some-postgres bash
+
+// ОШИБКИ
+// psql: FATAL:  no pg_hba.conf entry for host "10.0.0.1", user "my_login", database "postgres", SSL on
+// FATAL:  no pg_hba.conf entry for host "10.0.0.1", user "my_login", database "postgres", SSL off
+
+// Поиск файла с конфигурацией
+find / -name pg_hba.conf 2>/dev/null
+
+// Перезапуск сервиса 
+sudo service postgresql reload
+
+// 

@@ -1,0 +1,82 @@
+image: alpine      # Самый легковесный из всех Линуксовых образов
+                   # Но в нём нет некоторых команд
+                   
+stages:
+    - env
+    - check-res
+    - test
+    - package
+
+cache:
+    paths:
+        - cache_folder
+
+env:
+    stage: env
+    script: env
+
+job:        # Название jobы - может быть каким угодно (exapmple job_andrei)
+    stage: test 
+    script: 
+        - cat file1.txt file2.txt | grep -q "Hello world"
+        - mkdir cache_folder 2> /dev/null
+        - cat file1.txt file2.txt > cache_folder/cache.txt
+
+check_hdd:
+    only:               # настройка выполнения jobы для конкретной ветки 
+        - master
+    image: debian
+    stage: check-res
+    script: df -h
+
+check_ram:
+    only:               # настройка выполнения jobы для конкретной ветки 
+        - master
+    image: ubuntu
+    stage: check-res
+    script: free -mh
+
+check_cpu:
+    only:               # настройка выполнения jobы для конкретной ветки
+        - master
+    image: ubuntu
+    stage: check-res
+    script:
+        - nproc
+        - lscpu
+    allow_failure: true     # разрешить прохождение дальше
+                            # после вываливания в ошибку
+                            # этой jobы 
+    tags:               # тэг для executora
+        - docker-atp     # 
+
+create_package:
+    image: ubuntu
+    stage: package
+    before_script:
+        - apt update
+        - apt install git -y
+    script: cat file1.txt file2.txt | gzip > package.gz
+    artifacts:
+        paths:
+            - package.gz
+        expire_in: 1 hour
+        
+# pipeline: 
+#   - stage:    - этапы, которые работают последовательно
+#               stage внутри pipeline-a идут последовательно
+#               job-ы внутри stage и они могут работать параллельно
+# 
+#  После создания stages необходимо каждую jobу определить в какой-то
+#  конкретный stage
+# image: alpine - образы из Докерхаба, их можно задать глобально 
+# и локально для каждой jobы
+# 
+# 1) Запускается executor
+# 2) Запускает docker-контейнер
+#  
+# Состояние job:
+# 1) created - создалась но не запланировалась в очереди
+# 2) pending - стоит в очереди
+# 3) running - запущена
+# 4) skipped - пропустить

@@ -1,0 +1,97 @@
+//--//--//--//--//____Полезные команды Linux____//--//--//--//--//
+// Переменные окружения в Linux
+env 
+// Просмотр где лежит команда
+which __command__  (example: which ls)
+// Просмотр свободного места
+df -h
+// Добавление пользователя
+add user || user add
+// Используется для открытия и закрытия портов
+ufw
+// Используется для настройки фаерволла???
+ferm
+// Проброс портов
+ssh root@192.168.0.7 -L 5000:localhost:10000
+// Вывод кол-ва ядер
+nproc
+// Вывод системной информации
+lscpu
+
+//--//--//--//--//____Создание Докерфайла с командами____//--//--//--//--//
+Докерфайл/Dockerfile:
+
+FROM ubuntu:18.04
+RUN apt update			-- Для оптимизации и уменьшения слоев можно объединять команды 
+RUN apt install git mc -y	-- с помощью &
+				-- например: RUN apt update & apt install git mc -y
+
+---- RUN apt update && \									------ вариант
+----      echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \	------- для установки с
+----      apt install git mc python3-dev python3-pip -y && \					------- Jupyter
+
+
+ADD my_file.txt /root/       	-------> Добавление файла в Докерфайле
+    					1) путь относительно папки 2) путь в контейнере
+
+ENV usual "noroot"				-- Добавление переменной
+RUN useradd -m -d /home/${usual} ${usual} 	-- Добавление пользователя
+						-- создание для него рабочей директории 
+RUN chown -R ${usual} /home/${usual}		-- настройка владельца для папки
+RUN chmod -R 755 /home/${usual}			-- смена прав доступа на папку
+RUN chsh -s /bin/bash ${usual}			-- смена базового шелла
+						
+USER ${usual}					-- Смена пользователя
+WORKDIR /home/${usual}				-- Смена директории
+RUN echo ${USER} && whoami && pwd 		-- Вывод пользователя и пути
+USER root 					-- Смена пользователя
+WORKDIR /root 					--
+
+
+//--//--//--//--//____Команды для работы с Докером____//--//--//--//--// 
+Собрать образ с указанным тэгом, точка указывает где Докерфайл
+docker build -t practice2022 .
+Сбор контейнера без кэша (иногда нужно)
+docker build -t practice2022 . --no-cache
+
+Существующие образы 
+docker images
+
+Посмотреть список запущенных контейнеров
+docker ps
+
+Запуск контейнера в интерактивном режиме:
+docker run -it practice
+
+Запуск контейнера в интерактивном режиме с примонтированными директориями/volume
+docker run -it -v ${PWD}/dir:/dir -v ${PWD}/ro:/root/ro:ro practice 
+
+Копирование из/в контейнер
+docker cp CONTAINER:/app/my_file.txt filename.txt
+docker cp filename.txt CONTAINER:/app/my_file.txt
+
+
+// выполнение указанной команды в контейнере 
+docker exec _name_container_  _command_(for example ls) 
+
+// Выполнение команды, при этом остаёмся в контейнере
+docker exec -it clever_cerf /bin/bash
+
+// Просмотр из чего состоит контейнер 
+docker inspect __container_name__
+
+// Просмотр всех ненужных образов 
+docker images -f "dangling=true"
+
+// Удаление всех образов, которые не нужны
+docker rmi -f $(docker images -f "dangling=true")     --> $() - subshell - как бы использование подфункции
+
+
+// Спец. команда очистки
+docker system prune
+
+// Проброс порта
+docker run -it -p 15000:10000 practice2022      --> порт сервера: порт в Докере
+
+// 
+ 3 19
