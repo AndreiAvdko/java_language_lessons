@@ -13,6 +13,7 @@ public class Main {
     private static String staffFile = "data/staff.txt";
     private static String dateFormat = "dd.MM.yyyy";
     public static void main(String[] args) {
+
         ArrayList<Employee> staff = loadStaffFromFile();
 
         Stream<Employee> stream = staff.stream();
