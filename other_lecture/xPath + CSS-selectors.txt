@@ -19,13 +19,18 @@
 
 # Переход на уровень выше (переход к родителю)
 	//span[text()='__Something text__']/../..
+
 # Второй вариант
 	//span[text()='__Something text__']/parent::div
 
+# Третий вариант
+	//span[text()='__Something text__']/ancestor::div
 
 # Переход к дочернему элементу
 	//span[text()='__Something text__']/following-sibling::div
 
+# Вложенный XPath
+//div[./h2[text()='__Something text__']]
 
 #####################################
 ########### CSS-selectors ###########
